@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd7d8740e2e55694984a173e4d455c1c, type: 3}
+  m_Name: Model
+  m_EditorClassIdentifier: 
+  resourceRuleGroup:
+  - checkItemName: "\u5B50\u7F51\u683C\u6570"
+    resourceRules:
+    - result:
+        warningLevel: 1
+        resCheckResultTips: "\u5EFA\u8BAE\u4E0D\u8981\u4F7F\u7528\u5B50\u7F51\u683C"
+      filterType: 0
+      filterItems:
+      - checkItemName: "\u5B50\u7F51\u683C\u6570"
+        filterString: 2
+        positive: 1
+      resourceTagGUID: 21ec91dfc0d2f574db482c13c6101ac0
+  - checkItemName: "\u9876\u70B9\u6570"
+    resourceRules:
+    - result:
+        warningLevel: 1
+        resCheckResultTips: "\u9876\u70B9\u6570\u5C11\u4E8E10000"
+      filterType: 0
+      filterItems:
+      - checkItemName: "\u9876\u70B9\u6570"
+        filterString: 10000
+        positive: 1
+      resourceTagGUID: b48e933071746d74aa3f640f35090275
+    - result:
+        warningLevel: 1
+        resCheckResultTips: "\u9876\u70B9\u6570\u5C11\u4E8E5000"
+      filterType: 0
+      filterItems:
+      - checkItemName: "\u9876\u70B9\u6570"
+        filterString: 5000
+        positive: 1
+      resourceTagGUID: 0ebce8ebdb87b4046b21ec57b71e3367
+  - checkItemName: Compression
+    resourceRules:
+    - result:
+        warningLevel: 1
+        resCheckResultTips: "\u5EFA\u8BAE\u5F00\u542F\u7F51\u683C\u538B\u7F29"
+      filterType: 0
+      filterItems:
+      - checkItemName: Compression
+        filterString: off
+        positive: 1
+      resourceTagGUID: 21ec91dfc0d2f574db482c13c6101ac0

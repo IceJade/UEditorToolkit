@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a77ad290aadfa644a5b152bdeff5227, type: 3}
+  m_Name: ResourceTag
+  m_EditorClassIdentifier: 
+  resourceTags:
+  - resourceTagName: "\u901A\u7528\u8D44\u6E90\u89C4\u8303"
+    resourceFolder: {fileID: 0}
+    resourceTagType: 0
+    tagGUIDs: 21ec91dfc0d2f574db482c13c6101ac0
+    isSceneResourceTag: 0
+  - resourceTagName: "UI\u8D44\u6E90\u89C4\u8303"
+    resourceFolder: {fileID: 102900000, guid: dde68a3753cb3c0499e178a1dd2f688e, type: 3}
+    resourceTagType: 1
+    tagGUIDs: 1700d5022d031bc45b2ba229792fb036
+    isSceneResourceTag: 0
+  - resourceTagName: "Model\u8D44\u6E90\u89C4\u8303"
+    resourceFolder: {fileID: 102900000, guid: fdb2d2f09a2588444ae39b0a3c1cb16b, type: 3}
+    resourceTagType: 1
+    tagGUIDs: b48e933071746d74aa3f640f35090275
+    isSceneResourceTag: 0
+  - resourceTagName: "Scene\u8D44\u6E90\u89C4\u8303"
+    resourceFolder: {fileID: 102900000, guid: 0b83b8b30d09ab348ab179ed3708a803, type: 3}
+    resourceTagType: 1
+    tagGUIDs: 0ebce8ebdb87b4046b21ec57b71e3367
+    isSceneResourceTag: 1
+  - resourceTagName: "Effect\u8D44\u6E90\u89C4\u8303"
+    resourceFolder: {fileID: 102900000, guid: 127bbfdcf41529e4faa293f2bb465cb0, type: 3}
+    resourceTagType: 1
+    tagGUIDs: 8ceb5634f575d084b8a8616d41c988a5
+    isSceneResourceTag: 0

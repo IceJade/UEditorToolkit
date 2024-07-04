@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd7d8740e2e55694984a173e4d455c1c, type: 3}
+  m_Name: Texture
+  m_EditorClassIdentifier: 
+  resourceRuleGroup:
+  - checkItemName: Readable
+    resourceRules:
+    - result:
+        warningLevel: 1
+        resCheckResultTips: "\u5EFA\u8BAE\u4E0D\u8981\u5F00\u542Freadable"
+      filterType: 0
+      filterItems:
+      - checkItemName: Readable
+        filterString: true
+        positive: 1
+      resourceTagGUID: 21ec91dfc0d2f574db482c13c6101ac0
+  - checkItemName: "\u8D34\u56FE\u5927\u5C0F"
+    resourceRules:
+    - result:
+        warningLevel: 1
+        resCheckResultTips: "\u8D34\u56FE\u4E0D\u8981\u5927\u4E8E2048"
+      filterType: 0
+      filterItems:
+      - checkItemName: "\u8D34\u56FE\u5927\u5C0F"
+        filterString: 2049
+        positive: 1
+      resourceTagGUID: 21ec91dfc0d2f574db482c13c6101ac0
+  - checkItemName: "\u540E\u7F00\u540D"
+    resourceRules:
+    - result:
+        warningLevel: 2
+        resCheckResultTips: "\u4E0D\u5141\u8BB8dds\u683C\u5F0F\u8D34\u56FE"
+      filterType: 0
+      filterItems:
+      - checkItemName: "\u540E\u7F00\u540D"
+        filterString: dds
+        positive: 1
+      resourceTagGUID: 21ec91dfc0d2f574db482c13c6101ac0
+  - checkItemName: "\u6B63\u65B9\u5F62\u8D34\u56FE"
+    resourceRules:
+    - result:
+        warningLevel: 1
+        resCheckResultTips: "\u5EFA\u8BAE\u4F7F\u7528\u6B63\u65B9\u5F62\u8D34\u56FE"
+      filterType: 0
+      filterItems:
+      - checkItemName: "\u6B63\u65B9\u5F62\u8D34\u56FE"
+        filterString: false
+        positive: 1
+      resourceTagGUID: 21ec91dfc0d2f574db482c13c6101ac0
+  - checkItemName: "2\u6B21\u5E42\u8D34\u56FE"
+    resourceRules:
+    - result:
+        warningLevel: 1
+        resCheckResultTips: "\u5EFA\u8BAE\u4F7F\u75282\u6B21\u5E42\u8D34\u56FE"
+      filterType: 0
+      filterItems:
+      - checkItemName: "2\u6B21\u5E42\u8D34\u56FE"
+        filterString: false
+        positive: 1
+      resourceTagGUID: 21ec91dfc0d2f574db482c13c6101ac0
