@@ -4,105 +4,99 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Unity.ProjectAuditor.Editor.CodeAnalysis;
-using Unity.ProjectAuditor.Editor.Utils;
-using UnityEngine;
+using Unity.ProjectAuditor.Editor.Core;
+using UnityEngine.Profiling;
 
 namespace Unity.ProjectAuditor.Editor.InstructionAnalyzers
 {
-    class BuiltinCallAnalyzer : IInstructionAnalyzer
+    class BuiltinCallAnalyzer : CodeModuleInstructionAnalyzer
     {
-        Dictionary<string, List<ProblemDescriptor>> m_Descriptors; // method name as key, list of type names as value
-        Dictionary<string, ProblemDescriptor> m_WholeNamespaceDescriptors; // namespace as key
+        Dictionary<string, List<Descriptor>> m_Descriptors; // method name as key, list of type names as value
+        Dictionary<string, Descriptor> m_NamespaceOrClassDescriptors; // namespace/class name as key
 
-        public void Initialize(IAuditor auditor)
+        readonly OpCode[] m_OpCodes =
         {
-            var descriptors = ProblemDescriptorLoader.LoadFromJson(ProjectAuditor.DataPath, "ApiDatabase");
+            OpCodes.Call,
+            OpCodes.Callvirt
+        };
+
+        public override IReadOnlyCollection<OpCode> opCodes => m_OpCodes;
+
+        public override void Initialize(Action<Descriptor> registerDescriptor)
+        {
+            var descriptors = DescriptorLoader.LoadFromJson(ProjectAuditor.s_DataPath, "ApiDatabase");
             foreach (var descriptor in descriptors)
             {
-                auditor.RegisterDescriptor(descriptor);
+                registerDescriptor(descriptor);
             }
 
-            var methodDescriptors = descriptors.Where(descriptor => !descriptor.method.Equals("*") && !string.IsNullOrEmpty(descriptor.type));
+            var methodDescriptors = descriptors.Where(
+                descriptor => !descriptor.Method.Equals("*") &&
+                !string.IsNullOrEmpty(descriptor.Type) &&
+                descriptor.IsSupported());
 
-            m_Descriptors = new Dictionary<string, List<ProblemDescriptor>>();
+            m_Descriptors = new Dictionary<string, List<Descriptor>>();
             foreach (var d in methodDescriptors)
             {
-                if (!m_Descriptors.ContainsKey(d.method))
+                if (!m_Descriptors.ContainsKey(d.Method))
                 {
-                    m_Descriptors.Add(d.method, new List<ProblemDescriptor>());
+                    m_Descriptors.Add(d.Method, new List<Descriptor>());
                 }
-                m_Descriptors[d.method].Add(d);
+                m_Descriptors[d.Method].Add(d);
             }
 
-            m_WholeNamespaceDescriptors = auditor.GetDescriptors().Where(descriptor => descriptor.method.Equals("*")).ToDictionary(d => d.type);
+            m_NamespaceOrClassDescriptors = descriptors.Where(descriptor => descriptor.Method.Equals("*")).ToDictionary(d => d.Type);
         }
 
-        public ProjectIssue Analyze(MethodDefinition methodDefinition, Instruction inst)
+        public override ReportItemBuilder Analyze(InstructionAnalysisContext context)
         {
-            var callee = (MethodReference)inst.Operand;
-
-            // replace root with callee node
-            var calleeNode = new CallTreeNode(callee);
+            var callee = (MethodReference)context.Instruction.Operand;
             var description = string.Empty;
-
-            ProblemDescriptor descriptor;
             var methodName = callee.Name;
-            if (methodName.StartsWith("get_"))
-                methodName = methodName.Substring("get_".Length);
 
-            // Are we trying to warn about a whole namespace?
-            m_WholeNamespaceDescriptors.TryGetValue(callee.DeclaringType.Namespace, out descriptor);
-            if (descriptor != null)
+            Descriptor descriptor;
+            var declaringType = callee.DeclaringType;
+
+            // first check if type name, then namespace, then method/property name
+            if (m_NamespaceOrClassDescriptors.TryGetValue(declaringType.FastFullName(), out descriptor))
             {
-                description = calleeNode.prettyName;
+                description = string.Format("'{0}.{1}' usage", declaringType, methodName);
+            }
+            else if (m_NamespaceOrClassDescriptors.TryGetValue(declaringType.Namespace, out descriptor))
+            {
+                description = string.Format("'{0}.{1}' usage", declaringType, methodName);
             }
             else
             {
-                List<ProblemDescriptor> descriptors;
+                if (methodName.StartsWith("get_", StringComparison.Ordinal))
+                    methodName = methodName.Substring("get_".Length);
+
+                List<Descriptor> descriptors;
                 if (!m_Descriptors.TryGetValue(methodName, out descriptors))
                     return null;
 
-                descriptor = descriptors.Find(d => IsOrInheritedFrom(callee.DeclaringType, d.type));
+                Profiler.BeginSample("BuiltinCallAnalyzer.FindDescriptor");
+                descriptor = descriptors.Find(d => MonoCecilHelper.IsOrInheritedFrom(declaringType, d.Type));
+                Profiler.EndSample();
+
                 if (descriptor == null)
                     return null;
 
-                // by default use descriptor issue description
-                description = descriptor.description;
+                var genericInstanceMethod = callee as GenericInstanceMethod;
+                if (genericInstanceMethod != null && genericInstanceMethod.HasGenericArguments)
+                {
+                    var genericTypeNames = genericInstanceMethod.GenericArguments.Select(a => a.FullName).ToArray();
+                    description = $"'{descriptor.Title}<{string.Join(", ", genericTypeNames)}>' usage";
+                }
+                else
+                {
+                    // by default use descriptor issue description
+                    description = $"'{descriptor.Title}' usage";
+                }
             }
 
-            return new ProjectIssue
-            (
-                descriptor,
-                description,
-                IssueCategory.Code,
-                calleeNode
-            );
-        }
-
-        public IEnumerable<OpCode> GetOpCodes()
-        {
-            yield return OpCodes.Call;
-            yield return OpCodes.Callvirt;
-        }
-
-        static bool IsOrInheritedFrom(TypeReference typeReference, string typeName)
-        {
-            try
-            {
-                var typeDefinition = typeReference.Resolve();
-
-                if (typeDefinition.FullName.Equals(typeName))
-                    return true;
-
-                if (typeDefinition.BaseType != null)
-                    return IsOrInheritedFrom(typeDefinition.BaseType, typeName);
-            }
-            catch (AssemblyResolutionException e)
-            {
-                Debug.LogWarning(e);
-            }
-
-            return false;
+            return context.CreateIssue(IssueCategory.Code, descriptor.Id)
+                .WithDescription(description);
         }
     }
 }

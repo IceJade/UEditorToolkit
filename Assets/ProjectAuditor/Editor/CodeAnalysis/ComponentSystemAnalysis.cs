@@ -1,3 +1,4 @@
+#if PACKAGE_ENTITIES
 using System;
 using System.Linq;
 using Mono.Cecil;
@@ -8,7 +9,7 @@ namespace Unity.ProjectAuditor.Editor.CodeAnalysis
     static class ComponentSystemAnalysis
     {
         static readonly int k_EntitiesModuleHashCode = "Unity.Entities.dll".GetHashCode();
-        static readonly int[] k_ClassNameHashCodes = {"Unity.Entities.ComponentSystem".GetHashCode(), "Unity.Entities.JobComponentSystem".GetHashCode()};
+        static readonly int[] k_ClassNameHashCodes = {"Unity.Entities.SystemBase".GetHashCode(), "Unity.Entities.ISystem".GetHashCode()};
         static readonly int k_ILPostProcessorHashCode = "Unity.CompilationPipeline.Common.ILPostProcessing.ILPostProcessor".GetHashCode();
 
         static readonly string[] k_UpdateMethodNames = {"OnUpdate"};
@@ -32,7 +33,7 @@ namespace Unity.ProjectAuditor.Editor.CodeAnalysis
             }
             catch (AssemblyResolutionException e)
             {
-                Debug.LogWarning(e);
+                Debug.LogWarningFormat("Could not resolve {0}: {1}", typeReference.Name, e.Message);
             }
 
             return false;
@@ -44,3 +45,4 @@ namespace Unity.ProjectAuditor.Editor.CodeAnalysis
         }
     }
 }
+#endif

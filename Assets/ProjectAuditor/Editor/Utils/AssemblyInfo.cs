@@ -1,21 +1,8 @@
 using System;
-using System.IO;
+using System.Runtime.CompilerServices;
 
-namespace Unity.ProjectAuditor.Editor.Utils
-{
-    class AssemblyInfo
-    {
-        public const string DefaultAssemblyFileName = "Assembly-CSharp.dll";
-        public static string DefaultAssemblyName
-        {
-            get { return Path.GetFileNameWithoutExtension(DefaultAssemblyFileName); }
-        }
-
-        public string name;            // assembly name without extension
-        public string path;            // absolute path
-        public string asmDefPath;
-        public string relativePath;
-        public bool readOnly;
-        public string[] sourcePaths;
-    }
-}
+[assembly: InternalsVisibleTo("Unity.ProjectAuditor.Editor")]
+[assembly: InternalsVisibleTo("Unity.ProjectAuditor.Editor.UI")]
+[assembly: InternalsVisibleTo("Unity.ProjectAuditor.Editor.UI.Framework")]
+[assembly: InternalsVisibleTo("Unity.ProjectAuditor.Editor.Tests.Common")]
+[assembly: InternalsVisibleTo("Unity.ProjectAuditor.EditorTests")]

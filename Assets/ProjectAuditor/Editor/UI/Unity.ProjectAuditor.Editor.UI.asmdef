@@ -1,7 +1,10 @@
 {
     "name": "Unity.ProjectAuditor.Editor.UI",
+    "rootNamespace": "",
     "references": [
-        "Unity.ProjectAuditor.Editor"
+        "Unity.ProjectAuditor.Editor",
+        "Unity.ProjectAuditor.Editor.UI.Framework",
+        "Unity.ProjectAuditor.Editor.Utils"
     ],
     "includePlatforms": [
         "Editor"
@@ -12,6 +15,17 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.build-report-inspector",
+            "expression": "",
+            "define": "PACKAGE_BUILD_REPORT_INSPECTOR"
+        },
+        {
+            "name": "Unity",
+            "expression": "[2020.3,2023.2)",
+            "define": "PA_OLD_ANALYTICS_API"
+        }
+    ],
     "noEngineReferences": false
 }

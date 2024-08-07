@@ -11,10 +11,10 @@ namespace Unity.ProjectAuditor.Editor.CodeAnalysis
         static readonly int k_MonoBehaviourHashCode = "UnityEngine.MonoBehaviour".GetHashCode();
         static readonly int k_ILPostProcessorHashCode = "Unity.CompilationPipeline.Common.ILPostProcessing.ILPostProcessor".GetHashCode();
 
-        static readonly string[] k_MagicMethodNames =
-        {"Awake", "Start", "OnEnable", "OnDisable", "Update", "LateUpdate", "OnEnable", "FixedUpdate"};
+        static readonly string[] k_EventNames =
+        {"Awake", "Start", "OnEnable", "OnDisable", "Update", "LateUpdate", "FixedUpdate"};
 
-        static readonly string[] k_UpdateMethodNames = {"Update", "LateUpdate", "FixedUpdate"};
+        static readonly string[] k_UpdateMethodNames = {"Update", "LateUpdate", "FixedUpdate", "OnAnimatorIK", "OnAnimatorMove", "OnWillRenderObject", "OnRenderObject"};
 
         public static bool IsMonoBehaviour(TypeReference typeReference)
         {
@@ -26,6 +26,13 @@ namespace Unity.ProjectAuditor.Editor.CodeAnalysis
             {
                 var typeDefinition = typeReference.Resolve();
 
+                if (typeDefinition == null)
+                {
+                    // temporary fix to handle case where the assembly is found but not the type
+                    Debug.LogWarning(typeReference.FullName + " could not be resolved.");
+                    return false;
+                }
+
                 if (typeDefinition.FullName.GetHashCode() == k_MonoBehaviourHashCode &&
                     typeDefinition.Module.Name.GetHashCode() == k_CoreModuleHashCode)
                     return true;
@@ -35,15 +42,15 @@ namespace Unity.ProjectAuditor.Editor.CodeAnalysis
             }
             catch (AssemblyResolutionException e)
             {
-                Debug.LogWarning(e);
+                Debug.LogWarningFormat("Could not resolve {0}: {1}", typeReference.Name, e.Message);
             }
 
             return false;
         }
 
-        public static bool IsMonoBehaviourMagicMethod(MethodDefinition methodDefinition)
+        public static bool IsMonoBehaviourEvent(MethodDefinition methodDefinition)
         {
-            return k_MagicMethodNames.Contains(methodDefinition.Name);
+            return k_EventNames.Contains(methodDefinition.Name);
         }
 
         public static bool IsMonoBehaviourUpdateMethod(MethodDefinition methodDefinition)

@@ -1,10 +1,15 @@
 {
     "name": "com.unity.project-auditor",
-    "version": "0.5.0-preview",
+    "version": "0.11.0",
     "displayName": "Project Auditor",
-    "unity": "2018.4",
-    "description": "Project Auditor is an experimental static analysis tool for Unity Projects. This tool will analyze scripts and project settings of any Unity project and report a list a possible problems that might affect performance, memory and other areas. Note that this package is not officially supported by Unity and it is not on Unity's roadmap at this time.",
+    "unity": "2020.3",
+    "description": "Project Auditor is a static analysis tool that analyzes assets, settings, and scripts of the Unity project and produces a report containing: Code and Settings Diagnostics, the last BuildReport, and assets information. Note that this package is not officially supported by Unity and it is not on Unity's roadmap at this time.",
+    "keywords": [
+      "performance",
+      "analysis"
+    ],
     "dependencies": {
-        "nuget.mono-cecil": "0.1.6-preview"
+      "com.unity.nuget.mono-cecil": "1.11.4",
+      "com.unity.nuget.newtonsoft-json": "3.2.1"
     }
 }

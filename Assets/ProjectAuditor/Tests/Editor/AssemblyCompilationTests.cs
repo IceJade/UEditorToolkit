@@ -2,79 +2,102 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 using Unity.ProjectAuditor.Editor;
-using Unity.ProjectAuditor.Editor.Utils;
+using Unity.ProjectAuditor.Editor.AssemblyUtils;
+using Unity.ProjectAuditor.Editor.Tests.Common;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.ProjectAuditor.EditorTests
+namespace Unity.ProjectAuditor.EditorTests
 {
-    public class AssemblyCompilationTests
+    class AssemblyCompilationTests : TestFixtureBase
     {
-        TempAsset m_TempAsset;
-
-        [OneTimeSetUp]
-        public void SetUp()
-        {
-            m_TempAsset = new TempAsset("MyClass.cs", @"
-using UnityEngine;
+#pragma warning disable 0414
+        // this is required to generate Assembly-CSharp.dll
+        TestAsset m_TestAsset = new TestAsset("MyClass.cs", @"
 class MyClass
 {
-    void Dummy()
-    {
+    object myObj;
 #if UNITY_EDITOR
-        Debug.Log(Camera.allCameras.Length);
+    void EditorMethod()
+    { myObj = 9; }
+#elif DEVELOPMENT_BUILD
+    void DevelopmentPlayerMethod()
+    { myObj = 9; }
+#else
+    void PlayerMethod()
+    { myObj = 9; }
 #endif
-    }
-}
-");
-        }
-
-        [OneTimeTearDown]
-        public void TearDown()
-        {
-            TempAsset.Cleanup();
-        }
+}");
+#pragma warning restore 0414
 
         [Test]
-        public void DefaultAssemblyIsCompiled()
+        public void AssemblyCompilation_DefaultSettings_AreCorrect()
         {
-            using (var compilationHelper = new AssemblyCompilationPipeline())
+            using (var compilationHelper = new AssemblyCompilation())
             {
-                var assemblyInfos = compilationHelper.Compile();
-
-                Assert.Positive(assemblyInfos.Count());
-                Assert.NotNull(assemblyInfos.FirstOrDefault(info => info.name.Equals(AssemblyInfo.DefaultAssemblyName)));
+                Assert.AreEqual(CompilationMode.Player, compilationHelper.CompilationMode);
+                Assert.AreEqual(EditorUserBuildSettings.activeBuildTarget, compilationHelper.Platform);
             }
         }
 
         [Test]
-        public void EditorCodeIssueIsNotReported()
+        public void AssemblyCompilation_DefaultAssembly_IsCompiled()
         {
-            var config = ScriptableObject.CreateInstance<ProjectAuditorConfig>();
-            config.AnalyzeEditorCode = false;
+            using (var compilationHelper = new AssemblyCompilation())
+            {
+                var assemblyInfos = compilationHelper.Compile();
 
-            var projectAuditor = new Unity.ProjectAuditor.Editor.ProjectAuditor(config);
-
-            var projectReport = projectAuditor.Audit();
-            var issues = projectReport.GetIssues(IssueCategory.Code);
-            var codeIssue = issues.FirstOrDefault(i => i.relativePath.Equals(m_TempAsset.relativePath));
-
-            Assert.Null(codeIssue);
+                Assert.Positive(assemblyInfos.Count());
+                Assert.NotNull(assemblyInfos.FirstOrDefault(info => info.Name.Equals(AssemblyInfo.DefaultAssemblyName)));
+            }
         }
 
         [Test]
-        [Ignore("Known failure because the script is not recompiled by the editor")]
-        public void EditorCodeIssueIsReported()
+        public void AssemblyCompilation_EditorAssembly_IsCompiled()
         {
-            var config = ScriptableObject.CreateInstance<ProjectAuditorConfig>();
-            config.AnalyzeEditorCode = true;
+            using (var compilationHelper = new AssemblyCompilation
+               {
+                   CompilationMode =  CompilationMode.Editor
+               })
+            {
+                var assemblyInfo = compilationHelper.Compile().FirstOrDefault(a => a.Name.Equals("Unity.ProjectAuditor.Editor"));
 
-            var projectAuditor = new Unity.ProjectAuditor.Editor.ProjectAuditor(config);
-            var projectReport = projectAuditor.Audit();
+                Assert.NotNull(assemblyInfo);
+            }
+        }
 
-            var issues = projectReport.GetIssues(IssueCategory.Code);
-            var codeIssue = issues.FirstOrDefault(i => i.relativePath.Equals(m_TempAsset.relativePath));
+        [Test]
+        public void AssemblyCompilation_EditorAssembly_IsNotCompiled()
+        {
+            using (var compilationHelper = new AssemblyCompilation
+               {
+                   CompilationMode =  CompilationMode.EditorPlayMode
+               })
+            {
+                var assemblyInfo = compilationHelper.Compile().FirstOrDefault(a => a.Name.Equals("Unity.ProjectAuditor.Editor"));
+
+                Assert.Null(assemblyInfo);
+            }
+        }
+
+        [Test]
+        [TestCase(CompilationMode.Player, "PlayerMethod")]
+        [TestCase(CompilationMode.DevelopmentPlayer, "DevelopmentPlayerMethod")]
+        //Known failure because the script is not recompiled by the editor
+        //[TestCase(CompilationMode.Editor, "Editor")]
+        public void AssemblyCompilation_Player_IsCompiled(CompilationMode mode, string methodName)
+        {
+            var projectAuditor = new Unity.ProjectAuditor.Editor.ProjectAuditor();
+            var report = projectAuditor.Audit(new AnalysisParams
+            {
+                CompilationMode = mode
+            });
+
+            var issues = report.FindByCategory(IssueCategory.Code);
+            var codeIssue = issues.FirstOrDefault(i => i.RelativePath.Equals(m_TestAsset.RelativePath));
 
             Assert.NotNull(codeIssue);
+            Assert.AreEqual("MyClass." + methodName, codeIssue.Dependencies.PrettyName);
         }
     }
 }

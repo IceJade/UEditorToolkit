@@ -22,7 +22,7 @@ namespace ResourceCheckerPlus
                 var isStatic = go.isStatic;
                 var flag = GameObjectUtility.GetStaticEditorFlags(go);
                 var batchStatic = (flag & StaticEditorFlags.BatchingStatic) == StaticEditorFlags.BatchingStatic;
-                var lightmapStatic = (flag & StaticEditorFlags.LightmapStatic) == StaticEditorFlags.LightmapStatic;
+                var lightmapStatic = (flag & StaticEditorFlags.ContributeGI) == StaticEditorFlags.ContributeGI;
                 var navigationStatic = (flag & StaticEditorFlags.NavigationStatic) == StaticEditorFlags.NavigationStatic;
                 var rootPrefab = ResourceCheckerHelper.GetPrefabRoot(go);
                 var rootPrefabName = rootPrefab == null ? "null" : rootPrefab.name;

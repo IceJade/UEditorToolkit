@@ -1,28 +1,32 @@
 {% metadata_file .yamato/config.metadata %}
 ---
-{% for editor in test_editors %}
-{% unless editor.version <= "2018.4" %} {% comment %} Code Coverage is not supported on 2018.4 and earlier. {% endcomment %}
-{% for platform in test_platforms %}
+{% for editor in test_editors -%}
+{% for platform in test_platforms -%}
 test_coverage_{{ platform.name }}_{{ editor.version }}:
-  name: Test {{ editor.version }} coverage on {{ platform.name }}
+  name : Test Coverage on {{ platform.name }} ({{ editor.version }})
   agent:
     type: {{ platform.type }}
     image: {{ platform.image }}
     flavor: {{ platform.flavor}}
   commands:
     - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm
-    - upm-ci package test --unity-version {{ editor.version }} --enable-code-coverage --code-coverage-options 'generateAdditionalMetrics;generateHtmlReport;assemblyFilters:+Unity.ProjectAuditor.Editor,+Unity.ProjectAuditor.Editor.*'
+    - upm-ci package test --package-path com.unity.project-auditor -u {{ editor.version }} --type package-tests --enable-code-coverage --code-coverage-options 'generateAdditionalMetrics;generateHtmlReport;assemblyFilters:+Unity.ProjectAuditor*' --extra-utr-arg="--coverage-upload-options=\"hostUrl:https://codecov.unity3d.com;reports:upm-ci~/test-results/**/*.xml;name:{{ platform.name }}_{{ editor.version }};flags:{{ platform.name }}\""
   artifacts:
     logs:
       paths:
         - "upm-ci~/test-results/**/*"
   dependencies:
-    - .yamato/upm-ci.yml#pack
-  triggers:
-    recurring:
-      - branch: master
-        frequency: weekly
-        rerun: on_new_revision
-{% endfor %}
-{% endunless %}
-{% endfor %}
+    - .yamato/pack.yml#pack
+{% endfor -%}
+{% endfor -%}
+
+
+{% for platform in test_platforms -%}
+tests_coverage_all_{{ platform.name }}:
+  name: _Run All Coverage Tests ({{ platform.name }})
+  dependencies:
+    - .yamato/pack.yml#pack
+{% for editor in test_editors -%}
+    - .yamato/coverage.yml#test_coverage_{{ platform.name }}_{{ editor.version }}
+{% endfor -%}
+{% endfor -%}

@@ -1,23 +1,27 @@
 using System.Linq;
 using NUnit.Framework;
 using Unity.ProjectAuditor.Editor;
+using Unity.ProjectAuditor.Editor.Modules;
+using Unity.ProjectAuditor.Editor.Tests.Common;
 using UnityEngine;
 
-namespace UnityEditor.ProjectAuditor.EditorTests
+namespace Unity.ProjectAuditor.EditorTests
 {
-    public class MetaDataTests
+    class MetadataTests : TestFixtureBase
     {
         [Test]
-        public void MetaDataIsReported()
+        public void Metadata_IsReported()
         {
-            var projectAuditor = new Unity.ProjectAuditor.Editor.ProjectAuditor();
+            var report = m_ProjectAuditor.Audit(new AnalysisParams
+            {
+                Categories = new[]
+                {
+                    IssueCategory.ProjectSetting,
+                }
+            });
 
-            var projectReport = projectAuditor.Audit();
-            var issues = projectReport.GetIssues(IssueCategory.MetaData);
-            var matchingIssue = issues.FirstOrDefault(i => i.description.Equals("Unity Version"));
-
-            Assert.NotNull(matchingIssue);
-            Assert.True(matchingIssue.GetCustomProperty(0).Equals(Application.unityVersion));
+            Assert.IsNotNull(report.SessionInfo);
+            Assert.AreEqual(Application.unityVersion, report.SessionInfo.UnityVersion);
         }
     }
 }
