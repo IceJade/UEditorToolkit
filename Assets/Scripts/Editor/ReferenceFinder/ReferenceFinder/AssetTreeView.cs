@@ -27,7 +27,7 @@ public class AssetTreeView : TreeView
         State,
     }
 
-    public AssetTreeView(TreeViewState state,MultiColumnHeader multicolumnHeader):base(state,multicolumnHeader)
+    public AssetTreeView(TreeViewState state, MultiColumnHeader multicolumnHeader) : base(state, multicolumnHeader)
     {
         rowHeight = kRowHeights;
         columnIndexForTreeFoldouts = 0;
@@ -56,7 +56,7 @@ public class AssetTreeView : TreeView
             EditorGUIUtility.PingObject(assetObject);
         }
     }
-    
+
     //生成ColumnHeader
     public static MultiColumnHeaderState CreateDefaultMultiColumnHeaderState(float treeViewWidth)
     {
@@ -72,7 +72,7 @@ public class AssetTreeView : TreeView
                 minWidth = 60,
                 autoResize = false,
                 allowToggleVisibility = false,
-                canSort = false        
+                canSort = false
             },
             //路径
             new MultiColumnHeaderState.Column
@@ -85,7 +85,7 @@ public class AssetTreeView : TreeView
                 autoResize = false,
                 allowToggleVisibility = false,
                 canSort = false
-    },
+            },
             //状态
             new MultiColumnHeaderState.Column
             {
@@ -96,7 +96,7 @@ public class AssetTreeView : TreeView
                 minWidth = 60,
                 autoResize = false,
                 allowToggleVisibility = true,
-                canSort = false          
+                canSort = false
             },
         };
         var state = new MultiColumnHeaderState(columns);
@@ -111,14 +111,14 @@ public class AssetTreeView : TreeView
     protected override void RowGUI(RowGUIArgs args)
     {
         var item = (AssetViewItem)args.item;
-        for(int i = 0; i < args.GetNumVisibleColumns(); ++i)
+        for (int i = 0; i < args.GetNumVisibleColumns(); ++i)
         {
             CellGUI(args.GetCellRect(i), item, (MyColumns)args.GetColumn(i), ref args);
         }
     }
 
     //绘制列表中的每项内容
-    void CellGUI(Rect cellRect,AssetViewItem item,MyColumns column, ref RowGUIArgs args)
+    void CellGUI(Rect cellRect, AssetViewItem item, MyColumns column, ref RowGUIArgs args)
     {
         CenterRectUsingSingleLineHeight(ref cellRect);
         switch (column)
@@ -130,10 +130,10 @@ public class AssetTreeView : TreeView
                     iconRect.width = kIconWidth;
                     if (iconRect.x < cellRect.xMax)
                     {
-                        var icon = GetIcon(item.data.path);
-                        if(icon != null)
-                            GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
-                    }                        
+                        //var icon = GetIcon(item.data.path);
+                        //if(icon != null)
+                        //    GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
+                    }
                     args.rowRect = cellRect;
                     base.RowGUI(args);
                 }
@@ -145,7 +145,7 @@ public class AssetTreeView : TreeView
                 break;
             case MyColumns.State:
                 {
-                    GUI.Label(cellRect, ReferenceFinderData.GetInfoByState(item.data.state),stateGUIStyle);
+                    GUI.Label(cellRect, ReferenceFinderData.GetInfoByState(item.data.state), stateGUIStyle);
                 }
                 break;
         }
@@ -163,5 +163,5 @@ public class AssetTreeView : TreeView
             return icon;
         }
         return null;
-    }    
+    }
 }

@@ -57,7 +57,15 @@ public class ReferenceFinderData
         {
             foreach(var assetGuid in asset.Value.dependencies)
             {
-                assetDict[assetGuid].references.Add(asset.Key);
+                if (assetDict.ContainsKey(assetGuid))
+                {
+                    if(!assetDict[assetGuid].references.Contains(asset.Key))
+                        assetDict[assetGuid].references.Add(asset.Key);
+                }
+                else
+                {
+                    Debug.LogError($"invalid asset guid : {assetGuid}");
+                }
             }
         }
     }
@@ -68,17 +76,13 @@ public class ReferenceFinderData
         if (!path.StartsWith("Assets/"))
             return;
 
-        //通过path获取guid进行储存
         string guid = AssetDatabase.AssetPathToGUID(path);
-        //获取该资源的最后修改时间，用于之后的修改判断
         Hash128 assetDependencyHash = AssetDatabase.GetAssetDependencyHash(path);
         //如果assetDict没包含该guid或包含了修改时间不一样则需要更新
-        if (!assetDict.ContainsKey(guid) || assetDict[guid].assetDependencyHash != assetDependencyHash.ToString())
+        if (!assetDict.ContainsKey(guid))
         {
-            //将每个资源的直接依赖资源转化为guid进行储存
             var guids = AssetDatabase.GetDependencies(path, false).
-                Select(p => AssetDatabase.AssetPathToGUID(p)).
-                ToList();
+                Select(p => AssetDatabase.AssetPathToGUID(p)).ToList();
 
             //生成asset依赖信息，被引用需要在所有的asset依赖信息生成完后才能生成
             AssetDescription ad = new AssetDescription();
@@ -86,11 +90,17 @@ public class ReferenceFinderData
             ad.path = path;
             ad.assetDependencyHash = assetDependencyHash.ToString();
             ad.dependencies = guids;
+            assetDict.Add(guid, ad);
+        }
+        else if(assetDict[guid].assetDependencyHash != assetDependencyHash.ToString())
+        {
+            var guids = AssetDatabase.GetDependencies(path, false).
+                Select(p => AssetDatabase.AssetPathToGUID(p)).ToList();
 
-            if (assetDict.ContainsKey(guid))
-                assetDict[guid] = ad;
-            else
-                assetDict.Add(guid, ad);
+            assetDict[guid].name = Path.GetFileNameWithoutExtension(path);
+            assetDict[guid].path = path;
+            assetDict[guid].assetDependencyHash = assetDependencyHash.ToString();
+            assetDict[guid].dependencies = guids;
         }
     }
 
@@ -113,9 +123,7 @@ public class ReferenceFinderData
             BinaryFormatter bf = new BinaryFormatter();
             string cacheVersion = (string) bf.Deserialize(fs);
             if (cacheVersion != CACHE_VERSION)
-            {
                 return false;
-            }
 
             EditorUtility.DisplayCancelableProgressBar("Import Cache", "Reading Cache", 0);
             serializedGuid = (List<string>) bf.Deserialize(fs);
@@ -219,14 +227,11 @@ public class ReferenceFinderData
                     ad.state = AssetState.NORMAL;
                 }
             }
-            //不存在为丢失
             else
             {
                 ad.state = AssetState.MISSING;
             }
         }
-        
-        //字典中没有该数据
         else if(!assetDict.TryGetValue(guid, out ad))
         {
             string path = AssetDatabase.GUIDToAssetPath(guid);
@@ -261,7 +266,9 @@ public class ReferenceFinderData
         public string name = "";
         public string path = "";
         public string assetDependencyHash;
+        // 依赖的资源列表
         public List<string> dependencies = new List<string>();
+        // 被引用的资源列表
         public List<string> references = new List<string>();
         public AssetState state = AssetState.NORMAL;
     }
